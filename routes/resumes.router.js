@@ -8,9 +8,9 @@ const router = express.Router();
 router.post("/resumes", authMiddleware, async (req, res, next) => {
   const { title, content } = req.body;
   const { userId } = req.user;
-  
+
   if (!userId) {
-    return res.status(400).json({ errorMessage: "로그인이 필요합니다." });
+    return res.status(401).json({ errorMessage: "로그인이 필요합니다." });
   }
 
   await prisma.resumes.create({
