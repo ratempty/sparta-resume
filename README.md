@@ -1,5 +1,11 @@
 ## sparta-resume
 
+#### 환경변수
+DATABASE_URL
+
+CUSTOM_SECRET_KEY
+
+
 #### api 명세서 
 [api 명세서 ](https://www.notion.so/e3c8d8cd9757400fb89f623d8ff1a225?v=9daf5ad7a5e04c4d9360b7f08927b537&pvs=4)
 
