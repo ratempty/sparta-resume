@@ -1,15 +1,19 @@
 import jwt from "jsonwebtoken";
 import { prisma } from "../utils/index.js";
+import { createAccessToken } from "../utils/token.js";
+// import "dotenv/config";
 
 export default async function (req, res, next) {
   try {
-    const { authorization } = req.cookies;
-    if (!authorization) throw new Error("토큰이 없습니다.");
+    const { accessToken, refreshToken } = req.cookies;
+    if (!accessToken) throw new Error("토큰이 없습니다.");
 
-    const [tokenType, token] = authorization.split(" ");
+    const [tokenType, token] = accessToken.split(" ");
     if (tokenType !== "Bearer") throw new Error("토큰 타입이 틀립니다.");
 
-    const decodedToken = jwt.verify(token, "custom-secret-key");
+    console.log(process.env.CUSTOM_SECRET_KEY);
+    
+    const decodedToken = jwt.verify(token, process.env.CUSTOM_SECRET_KEY);
     const userId = decodedToken.id;
 
     const user = await prisma.users.findFirst({
@@ -20,10 +24,28 @@ export default async function (req, res, next) {
 
     req.user = user;
 
+    if (decodedToken.exp * 1000 < Date.now()) {
+      if (refreshToken) {
+        const decodedRefreshToken = jwt.verify(
+          refreshToken,
+          process.env.CUSTOM_SECRET_KEY
+        );
+
+        if (decodedRefreshToken.exp * 1000 > Date.now()) {
+          const newAccessToken = createAccessToken(userId);
+          res.cookie("accessToken", `Bearer ${newAccessToken}`);
+        } else {
+          return res
+            .status(401)
+            .json({ message: "리프레시 토큰이 만료되었습니다." });
+        }
+      } else {
+        return res.status(401).json({ message: "리프레시 토큰이 없습니다." });
+      }
+    }
+
     next();
   } catch (error) {
-    if (error.name === "TokenExpiredError")
-      return res.status(401).json({ message: "토큰만료!" });
     if (error.name === "JsonWebTokenError")
       return res.status(401).json({ message: "토큰이 조작되었습니다." });
     return res.status(400).json({ message: error.message });

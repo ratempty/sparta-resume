@@ -9,10 +9,6 @@ router.post("/resumes", authMiddleware, async (req, res, next) => {
   const { title, content } = req.body;
   const { userId } = req.user;
 
-  if (!userId) {
-    return res.status(401).json({ errorMessage: "로그인이 필요합니다." });
-  }
-
   await prisma.resumes.create({
     data: {
       userId: +userId,
@@ -26,51 +22,38 @@ router.post("/resumes", authMiddleware, async (req, res, next) => {
 
 // 이력서 전체조회 api
 router.get("/resumes", authMiddleware, async (req, res, next) => {
-  const { orderKey, orderValue } = req.query;
-  const { userId, isAdmin } = req.user;
+  const orderKey = req.query.orderKey ?? "resumeId";
+  const orderValue = req.query.orderValue ?? "desc";
 
-  if (userId !== +orderKey && !isAdmin) {
-    return res
-      .status(403)
-      .json({ message: "본인의 이력서만 조회 할 수 있습니다." });
+  if (!["resumeId", "state"].includes(orderKey)) {
+    return res.status(400).json({ message: "orderKey가 올바르지 않습니다." });
   }
 
-  const name = await prisma.users.findFirst({
-    where: {
-      userId: +orderKey,
-    },
-    select: {
-      name: true,
-    },
-  });
+  if (!["asc", "desc"].includes(orderValue.toLowerCase())) {
+    return res.status(400).json({ message: "orderValue가 올바르지 않습니다." });
+  }
 
   const resumes = await prisma.resumes.findMany({
-    where: {
-      userId: +orderKey,
-    },
     select: {
       resumeId: true,
       title: true,
       content: true,
       state: true,
+      user: {
+        select: {
+          name: true,
+        },
+      },
       createdAt: true,
-      updatedAt: true,
     },
-    orderBy: {
-      createdAt: orderValue,
-    },
+    orderBy: [
+      {
+        [orderKey]: orderValue,
+      },
+    ],
   });
 
-  const resumesPlusName = resumes.map((resume) => {
-    return {
-      ...resume,
-      name: name.name,
-    };
-  });
-
-  return res.status(200).json({
-    data: { resumes: resumesPlusName },
-  });
+  return res.status(200).json({ data: resumes });
 });
 
 //이력서 상세조회 api
