@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import authMiddleware from "../middleware/auth.middleware.js";
 import "dotenv/config";
+import { createRefreshToken } from "../utils/token.js";
 
 const router = express.Router();
 
@@ -60,11 +61,12 @@ router.post("/sign-in", async (req, res, next) => {
   if (!user) {
     return res.status(401).json({ message: "존재하지 않는 이메일입니다." });
   }
-  if (!(await bcrypt.compare(password, user.password))) {
+  if (!bcrypt.compare(password, user.password)) {
     return res.status(401).json({ message: "비밀번호가 다릅니다." });
   }
 
   const accessToken = createAccessToken(user.userId);
+  const refreshToken = createRefreshToken(user.userId);
 
   res.cookie("authorization", `Bearer ${accessToken}`);
 
