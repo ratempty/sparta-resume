@@ -10,8 +10,6 @@ export default async function (req, res, next) {
 
     const [tokenType, token] = accessToken.split(" ");
     if (tokenType !== "Bearer") throw new Error("토큰 타입이 틀립니다.");
-
-    console.log(process.env.CUSTOM_SECRET_KEY);
     
     const decodedToken = jwt.verify(token, process.env.CUSTOM_SECRET_KEY);
     const userId = decodedToken.id;

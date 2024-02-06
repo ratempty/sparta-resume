@@ -68,7 +68,8 @@ router.post("/sign-in", async (req, res, next) => {
   const accessToken = createAccessToken(user.userId);
   const refreshToken = createRefreshToken(user.userId);
 
-  res.cookie("authorization", `Bearer ${accessToken}`);
+  res.cookie("accessToken", `Bearer ${accessToken}`);
+  res.cookie("refreshToken", `Bearer ${refreshToken}`);
 
   return res.status(200).json({ accessToken });
 });
