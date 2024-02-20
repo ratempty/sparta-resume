@@ -1,10 +1,11 @@
 import jwt from "jsonwebtoken";
-import { createRefreshToken } from "../utils/token.js";
+import { createAccessToken, createRefreshToken } from "../utils/token.js";
 
 export class UsersController {
   constructor(usersService) {
     this.usersService = usersService;
   }
+
   // 회원가입
   signUp = async (req, res, next) => {
     try {
@@ -41,13 +42,11 @@ export class UsersController {
         email,
         password,
       });
-
       const accessToken = createAccessToken(signInUser.userId);
       const refreshToken = createRefreshToken(signInUser.userId);
 
       res.cookie("accessToken", `Bearer ${accessToken}`);
       res.cookie("refreshToken", `Bearer ${refreshToken}`);
-
 
       return res
         .status(201)
@@ -56,18 +55,12 @@ export class UsersController {
       console.log(error);
     }
   };
-  // 토큰생성
-  createAccessToken = (id) => {
-    return jwt.sign({ id }, process.env.CUSTOM_SECRET_KEY, {
-      expiresIn: "12h",
-    });
-  };
+
   // 내 정보 조회
   getMyInfo = async (req, res, next) => {
     try {
       const { userId } = req.user;
-
-      const user = await this.usersService.getUserById({ userId });
+      const user = await this.usersService.getUserById(userId);
 
       return res.status(200).json({ data: user });
     } catch (error) {

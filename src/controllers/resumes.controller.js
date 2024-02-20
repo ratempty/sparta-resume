@@ -62,7 +62,7 @@ export class ResumesController {
         content
       );
 
-      return res.status(200).json({ data: updatedPost });
+      return res.status(200).json({ data: updatedResume });
     } catch (error) {
       console.log(error);
     }

@@ -29,23 +29,22 @@ export class ResumesService {
     if (!["asc", "desc"].includes(orderValue.toLowerCase())) {
       throw new Error("orderValue가 올바르지 않습니다.");
     }
-
     return resumes.map((resume) => {
       return {
         resumeId: resume.resumeId,
         title: resume.title,
         content: resume.content,
         state: resume.state,
-        user: {
-          name: user.name,
-        },
+        name: resume.user.name,
         createdAt: resume.createdAt,
       };
     });
   };
   findResumeById = async (resumeId, userId) => {
     const resume = await this.resumesRepository.findresumeById(resumeId);
-
+    if (!resume) {
+      throw new Error("이력서를 찾을 수 없습니다.");
+    }
     if (userId !== resume.userId) {
       throw new Error("본인의 이력서만 조회할 수 있습니다.");
     }

@@ -36,14 +36,13 @@ export class ResumesRepository {
     return resumes;
   };
   findresumeById = async (resumeId) => {
-    const resume = await this.prisma.resumes.findFirst({
+    const resume = await this.prisma.resumes.findUnique({
       where: { resumeId: +resumeId },
     });
-
     return resume;
   };
   findResumeUnique = async (resumeId, title, content) => {
-    const updateResume = await this.prisma.resumes.findFirst({
+    const updateResume = await this.prisma.resumes.update({
       where: { resumeId: +resumeId },
       data: {
         title,
@@ -54,7 +53,7 @@ export class ResumesRepository {
   };
   deleteResume = async (resumeId) => {
     const deletedResume = await this.prisma.resumes.delete({
-      resumeId: +resumeId,
+      where: { resumeId: +resumeId },
     });
 
     return deletedResume;
