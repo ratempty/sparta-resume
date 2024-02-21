@@ -110,11 +110,15 @@ describe("Resumes Repository Unit Test", () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-
+  
     mockPrisma.resumes.update.mockReturnValue(mockReturn);
-
-    const resume = await resumesRepository.findResumeUnique(resumeParams);
-    console.log("bbb:", JSON.stringify(resumeParams));
+  
+    const resume = await resumesRepository.findResumeUnique(
+      resumeParams.resumeId,
+      resumeParams.title,
+      resumeParams.content
+    );
+  
     expect(resumesRepository.prisma.resumes.update).toHaveBeenCalledWith({
       where: {
         resumeId: resumeParams.resumeId,
@@ -124,11 +128,10 @@ describe("Resumes Repository Unit Test", () => {
         content: resumeParams.content,
       },
     });
-    console.log("aaa");
-
+  
     expect(mockPrisma.resumes.update).toHaveBeenCalledTimes(1);
-
-    expect(resume).toBe(mockReturn);
+  
+    expect(resume).toEqual(mockReturn);
   });
 
   test("deleteResume Method", async () => {

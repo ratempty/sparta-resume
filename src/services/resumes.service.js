@@ -72,22 +72,23 @@ export class ResumesService {
       content
     );
     return {
-      title: resume.title,
-      content: resume.content,
+      title: updatedResume.title,
+      content: updatedResume.content,
     };
   };
   deleteResume = async (userId, resumeId) => {
     const resume = await this.resumesRepository.findresumeById(resumeId);
 
-    if (!resume) {
-      throw new Error("존재하지 않는 이력서입니다.");
-    }
     if (userId !== resume.userId) {
       throw new Error("본인의 이력서만 삭제할 수 있습니다.");
+    }
+
+    if (!resume) {
+      throw new Error("존재하지 않는 이력서입니다.");
     }
 
     await this.resumesRepository.deleteResume(resumeId);
 
     return { resume };
-  };
+};
 }
