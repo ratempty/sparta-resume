@@ -17,6 +17,7 @@ export class ResumesController {
       return res.status(201).json({ data: createResume });
     } catch (error) {
       console.log(error);
+      return res.status(400).json({ message: error });
     }
   };
   // 이력서 전체조회
@@ -33,6 +34,7 @@ export class ResumesController {
       return res.status(200).json({ data: resumes });
     } catch (error) {
       console.log(error);
+      return res.status(400).json({ message: error });
     }
   };
   // 이력서 상세조회
@@ -46,6 +48,7 @@ export class ResumesController {
       return res.status(200).json({ data: resume });
     } catch (error) {
       console.log(error);
+      return res.status(400).json({ message: error });
     }
   };
   // 이력서 수정
@@ -65,6 +68,7 @@ export class ResumesController {
       return res.status(200).json({ data: updatedResume });
     } catch (error) {
       console.log(error);
+      return res.status(400).json({ message: error });
     }
   };
   // 이력서 삭제
@@ -81,6 +85,7 @@ export class ResumesController {
       return res.status(200).json({ message: "이력서 삭제 완료" });
     } catch (error) {
       console.log(error);
+      return res.status(400).json({ message: error });
     }
   };
 }
