@@ -229,18 +229,30 @@ describe("Resumes Service Unit Test", () => {
       updatedAt: unDeletedResume.updatedAt,
     });
 
+    const result = await resumesService.deleteResume(
+      resumeParams.resumeId,
+      resumeParams.userId,
+      unDeletedResume.title,
+      unDeletedResume.content,
+      unDeletedResume.state,
+      unDeletedResume.createdAt,
+      unDeletedResume.updatedAt,
+    );
+
     await expect(resumesService.deleteResume(resumeParams)).rejects.toThrow(
       "본인의 이력서만 삭제할 수 있습니다."
     );
 
-    expect(mockresumeRepository.findresumeById).toHaveBeenCalledTimes(1);
+    expect(result.userId).toEqual(resumeParams.userId);
+
+    expect(mockresumeRepository.findresumeById).toHaveBeenCalledTimes(2);
     expect(mockresumeRepository.findresumeById).toHaveBeenCalledWith(
-      resumeParams.resumeId
+      result.resumeId
     );
 
     expect(mockresumeRepository.deleteResume).toHaveBeenCalledTimes(1);
     expect(mockresumeRepository.deleteResume).toHaveBeenCalledWith(
-      resumeParams
+      resumeParams.resumeId
     );
   });
 });
