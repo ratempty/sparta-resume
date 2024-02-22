@@ -12,7 +12,6 @@ export class UsersRepository {
         chkPassword,
       },
     });
-
     return user;
   };
 
