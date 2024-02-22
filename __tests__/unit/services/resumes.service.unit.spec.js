@@ -6,6 +6,7 @@ let mockresumeRepository = {
   findAllResumes: jest.fn(),
   findresumeById: jest.fn(),
   updateResume: jest.fn(),
+  findResumeUnique: jest.fn(),
   deleteResume: jest.fn(),
 };
 
@@ -114,20 +115,19 @@ describe("Resumes Service Unit Test", () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-  
+
     mockresumeRepository.findresumeById.mockReturnValue(resumeSample);
-  
 
     const resume = await resumesService.findResumeById(
       resumeParams.resumeId,
       resumeParams.userId
     );
-  
+
     expect(mockresumeRepository.findresumeById).toHaveBeenCalledTimes(1);
     expect(mockresumeRepository.findresumeById).toHaveBeenCalledWith(
       resumeParams.resumeId
     );
-  
+
     expect(resume).toEqual({
       resumeId: resumeSample.resumeId,
       userId: resumeSample.userId,
@@ -140,57 +140,107 @@ describe("Resumes Service Unit Test", () => {
   });
 
   test("updateResume Method", async () => {
-    const resumeParams = {
+    const resumeParams_success = {
       resumeId: 1,
       userId: 1,
-      title: '타이틀',
-      content: '컨텐트'
+      title: "타이틀",
+      content: "컨텐트",
     };
-    const resumeSample = {
-      title: resumeParams.title,
-      content: resumeParams.content,
+
+    const resumeParams_fail = {
+      resumeId: 1,
+      userId: 2,
+      title: "타이틀",
+      content: "컨텐트",
     };
-  
-    mockresumeRepository.findresumeById.mockReturnValue(resumeSample);
-  
+
+    const unUpdatedResume = {
+      resumeId: 9,
+      userId: 1,
+      title: "수정된 제목",
+      content: "수정된 자기소개",
+      state: "APPLY",
+      createdAt: "2024-02-20T16:42:30.280Z",
+      updatedAt: "2024-02-20T16:42:30.280Z",
+    };
+
+    mockresumeRepository.findresumeById.mockReturnValue(unUpdatedResume);
+
+    mockresumeRepository.findResumeUnique.mockReturnValue({
+      resumeId: resumeParams_success.resumeId,
+      title: resumeParams_success.title,
+      content: resumeParams_success.content,
+      userId: unUpdatedResume.userId,
+      state: unUpdatedResume.state,
+      createdAt: unUpdatedResume.createdAt,
+      updatedAt: unUpdatedResume.updatedAt,
+    });
+
+    const result = await resumesService.updateResume(
+      resumeParams_success.resumeId,
+      resumeParams_success.userId,
+      resumeParams_success.title,
+      resumeParams_success.content
+    );
+
+    expect(result.title).toEqual(resumeParams_success.title);
+    expect(result.content).toEqual(resumeParams_success.content);
+
     await expect(async () => {
       await resumesService.updateResume(
-        resumeParams.userId,
-        resumeParams.resumeId,
-        resumeParams.title,
-        resumeParams.content
+        resumeParams_fail.userId,
+        resumeParams_fail.resumeId,
+        resumeParams_fail.title,
+        resumeParams_fail.content
       );
     }).rejects.toThrowError("자신의 이력서만 수정할 수 있습니다.");
-  
-    expect(mockresumeRepository.findresumeById).toHaveBeenCalledTimes(1);
+
+    expect(mockresumeRepository.findresumeById).toHaveBeenCalledTimes(2);
     expect(mockresumeRepository.findresumeById).toHaveBeenCalledWith(
-      resumeParams.resumeId
+      resumeParams_success.resumeId
     );
   });
 
   test("deleteResume Method", async () => {
-    const resumeSample = {
+    const resumeParams = {
       resumeId: 1,
-      title: 'Title_1',
-      content: 'Content_1',
-      createdAt: new Date('06 October 2011 15:50 UTC'),
-      updatedAt: new Date('06 October 2011 15:50 UTC'),
+      userId: 1,
     };
-    const mockReturn = 'delete'
-    mockresumeRepository.findPostById.mockReturnValue(resumeSample);
 
-    const deletePost = await postsService.deletePost(1);
+    const unDeletedResume = {
+      resumeId: 1,
+      userId: 1,
+      title: "수정된 제목",
+      content: "수정된 자기소개",
+      state: "APPLY",
+      createdAt: "2024-02-20T16:42:30.280Z",
+      updatedAt: "2024-02-20T16:42:30.280Z",
+    };
 
-    expect(mockresumeRepository.findPostById).toHaveBeenCalledTimes(1);
-    expect(mockresumeRepository.findPostById).toHaveBeenCalledWith(
-      samplePost.postId,
+    mockresumeRepository.findresumeById.mockReturnValue(unDeletedResume);
+
+    mockresumeRepository.deleteResume.mockReturnValue({
+      resumeId: resumeParams.resumeId,
+      userId: resumeParams.userId,
+      title: unDeletedResume.title,
+      content: unDeletedResume.content,
+      state: unDeletedResume.state,
+      createdAt: unDeletedResume.createdAt,
+      updatedAt: unDeletedResume.updatedAt,
+    });
+
+    await expect(resumesService.deleteResume(resumeParams)).rejects.toThrow(
+      "본인의 이력서만 삭제할 수 있습니다."
     );
-    expect(mockresumeRepository.deletePost).toHaveBeenCalledTimes(1);
-    expect(mockresumeRepository.deletePost).toHaveBeenCalledWith(
-      samplePost.postId,
-      samplePost.password,
+
+    expect(mockresumeRepository.findresumeById).toHaveBeenCalledTimes(1);
+    expect(mockresumeRepository.findresumeById).toHaveBeenCalledWith(
+      resumeParams.resumeId
     );
 
-    expect(deletePost).toEqual({mockReturn});
-  })
-})
+    expect(mockresumeRepository.deleteResume).toHaveBeenCalledTimes(1);
+    expect(mockresumeRepository.deleteResume).toHaveBeenCalledWith(
+      resumeParams
+    );
+  });
+});

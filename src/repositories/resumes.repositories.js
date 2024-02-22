@@ -55,7 +55,7 @@ export class ResumesRepository {
     const deletedResume = await this.prisma.resumes.delete({
       where: { resumeId: +resumeId },
     });
-
+    console.log(deletedResume);
     return deletedResume;
   };
 }

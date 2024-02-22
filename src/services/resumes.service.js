@@ -61,7 +61,6 @@ export class ResumesService {
   };
   updateResume = async (userId, resumeId, title, content) => {
     const resume = await this.resumesRepository.findresumeById(resumeId);
-
     if (userId !== resume.userId) {
       throw new Error("자신의 이력서만 수정할 수 있습니다.");
     }
@@ -89,6 +88,6 @@ export class ResumesService {
 
     await this.resumesRepository.deleteResume(resumeId);
 
-    return { resume };
-};
+    return resume;
+  };
 }
